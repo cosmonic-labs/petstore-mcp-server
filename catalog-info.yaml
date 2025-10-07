@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: petstore-mcp-server
+  description: Wasm MCP Server 
+  tags:
+    - backend
+    - webassembly
+spec:
+  type: service
+  owner: group:apps
+  lifecycle: development
