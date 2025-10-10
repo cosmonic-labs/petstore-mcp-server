@@ -5,22 +5,22 @@ import { httpClient } from "../../../../http_client.js";
 export function setupTool<S extends UpstreamMCPServer>(server: S) {
   const params = {
     "body": z.object({
-      "id": z.number().optional(),
-      "status": z.string().optional().describe("pet status in the store"),
       "name": z.string().optional(),
-      "category": z.object({
-        "name": z.string().optional(),
-        "id": z.number().optional(),
-      }).optional(),
+      "id": z.number().optional(),
       "photoUrls": z.array(
         z.string().optional(),
       ).optional(),
       "tags": z.array(
         z.object({
-          "name": z.string().optional(),
           "id": z.number().optional(),
+          "name": z.string().optional(),
         }).optional(),
       ).optional(),
+      "category": z.object({
+        "name": z.string().optional(),
+        "id": z.number().optional(),
+      }).optional(),
+      "status": z.string().optional().describe("pet status in the store"),
     }).optional(),
 
   };

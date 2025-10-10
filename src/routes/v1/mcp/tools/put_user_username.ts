@@ -7,13 +7,13 @@ export function setupTool<S extends UpstreamMCPServer>(server: S) {
     "username": z.string().describe("name that need to be deleted"),
 
     "body": z.object({
-      "userStatus": z.number().optional().describe("User Status"),
       "username": z.string().optional(),
-      "lastName": z.string().optional(),
-      "phone": z.string().optional(),
       "password": z.string().optional(),
-      "id": z.number().optional(),
+      "lastName": z.string().optional(),
       "firstName": z.string().optional(),
+      "phone": z.string().optional(),
+      "userStatus": z.number().optional().describe("User Status"),
+      "id": z.number().optional(),
       "email": z.string().optional(),
     }).optional(),
 

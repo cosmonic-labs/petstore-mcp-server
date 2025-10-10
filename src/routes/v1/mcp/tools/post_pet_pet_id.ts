@@ -25,8 +25,8 @@ export function setupTool<S extends UpstreamMCPServer>(server: S) {
             "petId": args["petId"] ?? "",
           },
           query: {
-            "status": args["status"] ?? "",
             "name": args["name"] ?? "",
+            "status": args["status"] ?? "",
           },
         })
         .then((response: Response) => response.text());
