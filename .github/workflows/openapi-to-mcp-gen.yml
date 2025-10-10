@@ -6,7 +6,7 @@ on:
             spec_path:
                 description: 'Path to the OpenAPI specification file'
                 required: false
-                default: './openapi/spec.yaml'
+                default: './openapi/input.json'
                 type: string
 
 jobs:
