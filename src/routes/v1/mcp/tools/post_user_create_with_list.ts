@@ -6,13 +6,13 @@ export function setupTool<S extends UpstreamMCPServer>(server: S) {
   const params = {
     "body": z.array(
       z.object({
-        "userStatus": z.number().optional().describe("User Status"),
-        "password": z.string().optional(),
-        "username": z.string().optional(),
         "phone": z.string().optional(),
-        "lastName": z.string().optional(),
         "email": z.string().optional(),
+        "password": z.string().optional(),
+        "lastName": z.string().optional(),
         "id": z.number().optional(),
+        "username": z.string().optional(),
+        "userStatus": z.number().optional().describe("User Status"),
         "firstName": z.string().optional(),
       }).optional(),
     ).optional(),

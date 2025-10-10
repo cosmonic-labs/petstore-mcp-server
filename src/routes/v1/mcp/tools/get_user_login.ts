@@ -20,8 +20,8 @@ export function setupTool<S extends UpstreamMCPServer>(server: S) {
           path: `/user/login`,
           method: 'GET',
           query: {
-            "username": args["username"] ?? "",
             "password": args["password"] ?? "",
+            "username": args["username"] ?? "",
           },
         })
         .then((response: Response) => response.text());
