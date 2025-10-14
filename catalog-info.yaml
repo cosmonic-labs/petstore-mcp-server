@@ -2,7 +2,9 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: petstore-mcp-server
-  description: Wasm MCP Server 
+  description: Wasm MCP Server
+  annotations:
+    argocd/app-name: demo-petstore-mcp
   tags:
     - backend
     - webassembly
