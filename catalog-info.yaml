@@ -5,6 +5,7 @@ metadata:
   description: Wasm MCP Server
   annotations:
     argocd/app-name: demo-petstore-mcp
+    argocd/app-namespace: petstore
   tags:
     - backend
     - webassembly
