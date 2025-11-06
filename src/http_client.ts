@@ -1,8 +1,8 @@
-import { BASE_URL } from "./constants";
+import { getBaseUrl } from "./constants";
 import { validateAuth } from "./auth";
 
 export interface HTTPClientParams {
-    baseUrl: string;
+    baseUrl?: string;
 }
 
 export interface CallParams {
@@ -15,14 +15,17 @@ export interface CallParams {
 }
 
 export class HTTPClient {
-    private baseUrl: string;
+    private baseUrl: string | undefined;
 
-    constructor(params: HTTPClientParams) {
+    constructor(params: HTTPClientParams = {}) {
         this.baseUrl = params.baseUrl;
     }
 
     public async call(params: CallParams): Promise<Response> {
         await validateAuth(params);
+
+        // Lazy load the base URL at runtime to avoid Wizer initialization issues
+        const baseUrl = this.baseUrl || getBaseUrl();
 
         let path = params.path;
         for (const [key, value] of Object.entries(params.pathParams ?? {})) {
@@ -30,7 +33,7 @@ export class HTTPClient {
         }
         console.assert(!path.includes('{'), `Not all path params were replaced in path: ${path}`);
 
-        return fetch(`${this.baseUrl}${path}?${new URLSearchParams(params.query).toString()}`, {
+        return fetch(`${baseUrl}${path}?${new URLSearchParams(params.query).toString()}`, {
             method: params.method,
             headers: params.headers,
             body: params.body,
@@ -38,6 +41,4 @@ export class HTTPClient {
     }
 }
 
-export const httpClient = new HTTPClient({
-    baseUrl: BASE_URL,
-});
+export const httpClient = new HTTPClient();
