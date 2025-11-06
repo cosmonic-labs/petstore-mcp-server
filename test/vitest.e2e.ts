@@ -8,6 +8,12 @@ const REPORTERS = process.env.GITHUB_ACTIONS
   : ["verbose"];
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      // Mock wasi:config/store for test environment
+      "wasi:config/store@0.2.0-rc.1": new URL("./mocks/wasi-config-store.ts", import.meta.url).pathname,
+    },
+  },
   test: {
     reporters: REPORTERS,
     // Github Actions machines, in particular windows can be flaky

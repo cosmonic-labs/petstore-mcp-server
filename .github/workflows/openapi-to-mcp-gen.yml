@@ -24,7 +24,6 @@ jobs:
               uses: wasmcloud/setup-wash-action@v1.0.0-rc.3
               with:
                   plugins: ghcr.io/cosmonic-labs/openapi2mcp:v0.5.0
-
             - name: Check for OpenAPI specification
               run: |
                   SPEC_PATH="${{ github.event.inputs.spec_path }}"

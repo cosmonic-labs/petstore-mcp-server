@@ -13,13 +13,8 @@ import { hashElement } from "folder-hash";
 
 const log = debuglog("test");
 
-/** Where to find Jco as an executable */
-const TEST_WASMTIME_CMD = env.TEST_WASMTIME_CMD ?? `wasmtime`;
-
-/** Path to the WASM file to be used */
-const WASM_PATH = fileURLToPath(
-  new URL(env.WASM_PATH ?? "../dist/component.wasm", import.meta.url),
-);
+/** Where to find wash as an executable */
+const TEST_WASH_CMD = env.TEST_WASH_CMD ?? `wash`;
 
 /** Path to the src folder */
 const SRC_FOLDER_PATH = fileURLToPath(
@@ -34,7 +29,6 @@ const DIST_FOLDER_PATH = fileURLToPath(
 /** Args for `setupE2E()` */
 interface SetupE2EArgs {
   path?: string;
-  testWASMPath?: string;
 }
 
 /** Returned by `setupE2E()` */
@@ -50,44 +44,55 @@ interface E2ETestSetup {
  * @returns {Promise<E2ETestSetup>}
  */
 export async function setupE2E(args: SetupE2EArgs): Promise<E2ETestSetup> {
-  const wasmPath = args.testWASMPath ?? WASM_PATH;
-
-  // Determine paths to jco and output wasm
-  const wasmPathExists = await stat(wasmPath)
-    .then((p) => p.isFile())
-    .catch(() => false);
-  if (!wasmPathExists) {
-    throw new Error(
-      `Missing/invalid Wasm binary @ [${WASM_PATH}] (has 'npm run build' been run?)`,
-    );
-  }
+  // wash dev will build the component itself, so we don't need to check for the wasm file
 
   // Generate a random port
   const randomPort = await getRandomPort();
 
-  // Spawn wasmtime serve
+  // Spawn wash dev
   const cmdArgs = [
-    "serve",
-    "-S",
-    "cli",
-    "--addr",
+    "dev",
+    "--address",
     `127.0.0.1:${randomPort}`,
-    wasmPath,
   ];
-  log(`SPAWN: ${TEST_WASMTIME_CMD} ${cmdArgs.join(" ")}`);
-  const proc = spawn(TEST_WASMTIME_CMD, cmdArgs, {
+  log(`SPAWN: ${TEST_WASH_CMD} ${cmdArgs.join(" ")}`);
+  const proc = spawn(TEST_WASH_CMD, cmdArgs, {
     detached: false,
     stdio: "pipe",
-    shell: true,
+    shell: false,
   });
+
+  // Capture stdout and stderr for error reporting
+  let stdoutBuffer = "";
+  let stderrBuffer = "";
 
   // Wait for the server to start
   await Promise.race([
-    new Promise((resolve) => {
-      proc.stderr.on("data", (data: string) => {
-        log(`(wasmtime serve) STDERR: ${data}`);
-        if (data.includes("Serving HTTP")) {
+    new Promise((resolve, reject) => {
+      proc.stdout.on("data", (data: Buffer) => {
+        const output = data.toString();
+        stdoutBuffer += output;
+        log(`(wash dev) STDOUT: ${output}`);
+        if (output.includes("listening for HTTP requests") || output.includes("HTTP server starting")) {
           resolve(null);
+        }
+      });
+      proc.stderr.on("data", (data: Buffer) => {
+        const output = data.toString();
+        stderrBuffer += output;
+        log(`(wash dev) STDERR: ${output}`);
+        if (output.includes("listening for HTTP requests") || output.includes("HTTP server starting")) {
+          resolve(null);
+        }
+      });
+      proc.on("error", (err) => {
+        log(`(wash dev) ERROR: ${err.message}`);
+        reject(new Error(`wash dev process error: ${err.message}`));
+      });
+      proc.on("exit", (code, signal) => {
+        log(`(wash dev) EXITED with code: ${code}, signal: ${signal}`);
+        if (code !== 0 && code !== null) {
+          reject(new Error(`wash dev process exited with code: ${code}\n\nSTDOUT:\n${stdoutBuffer}\n\nSTDERR:\n${stderrBuffer}`));
         }
       });
     }),
@@ -96,10 +101,10 @@ export async function setupE2E(args: SetupE2EArgs): Promise<E2ETestSetup> {
         () =>
           reject(
             new Error(
-              "timed out waiting for spawned wasmtime serve server listen",
+              `timed out waiting for spawned wash dev server listen\n\nSTDOUT:\n${stdoutBuffer}\n\nSTDERR:\n${stderrBuffer}`,
             ),
           ),
-        1000 * 10,
+        1000 * 180,
       ),
     ),
   ]);
@@ -116,7 +121,7 @@ export async function setupE2E(args: SetupE2EArgs): Promise<E2ETestSetup> {
         throw new Error("unexpectedly undefined PID");
       }
       proc.kill();
-      log(`terminated jco serve process with PID [${proc.pid}]`);
+      log(`terminated wash dev process with PID [${proc.pid}]`);
     },
   };
 }
